@@ -229,6 +229,15 @@ If you use this model, please cite:
 }
 ```
 
+```bibtex
+@article{bagad2025chirality,
+  title={Chirality in Action: Time-Aware Video Representation Learning by Latent Straightening},
+  author={Bagad, Piyush and Zisserman, Andrew},
+  journal={arXiv preprint arXiv:2509.08502},
+  year={2025}
+}
+```
+
 ## License
 
 Apache 2.0
