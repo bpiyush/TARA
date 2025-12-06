@@ -194,7 +194,13 @@ For each task, we provide a single script that you can run with TARA (or any sim
 
 #### Chiral Retrieval
 
-TODO
+CiA has three datasets: SSv2, EPIC and Charades.
+We evaluate TARA on these datasets using the following script:
+```bash
+python evals/cia.py --model_path /path/to/download/tara --dataset ssv2
+python evals/cia.py --model_path /path/to/download/tara --dataset epic
+python evals/cia.py --model_path /path/to/download/tara --dataset charades
+```
 
 #### Verb recognition
 
