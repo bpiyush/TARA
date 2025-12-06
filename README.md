@@ -223,10 +223,6 @@ python evals/adverbs.py --model_path /path/to/download/tara --dataset vatex-adve
 
 TODO
 
-#### Video captioning
-
-TODO
-
 #### Composed Video Retrieval
 
 TODO
