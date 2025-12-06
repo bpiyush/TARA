@@ -198,13 +198,18 @@ CiA has three datasets: SSv2, EPIC and Charades.
 We evaluate TARA on these datasets using the following script:
 ```bash
 python evals/cia.py --model_path /path/to/download/tara --dataset ssv2
-python evals/cia.py --model_path /path/to/download/tara --dataset epic
-python evals/cia.py --model_path /path/to/download/tara --dataset charades
 ```
+You can also run the same on `epic` and `charades` by changing the `--dataset` flag.
 
 #### Verb recognition
 
-TODO 
+To run verb recognition on Kinetics-400 proposed by [Momeni et al.](https://arxiv.org/abs/2304.06708), run:
+
+```sh
+python evals/zsar.py --dataset kinetics-verbs --model_path /path/to/download/tara
+```
+
+You can also run the same on `ucf101` and `hmdb51` by changing the `--dataset` flag.
 
 #### Adverb recognition
 

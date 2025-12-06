@@ -15,3 +15,27 @@ charades:
   video_dir: /scratch/shared/beegfs/piyush/datasets/Charades/Charades_v1_480_cut_clips
   csv_path: /users/piyush/projects/TimeBound.v1/adapt4change/chirality_in_action_splits/cia-charades-validation.csv
   ext: mp4
+
+ucf101:
+  name: "UCF101"
+  video_dir: /scratch/shared/beegfs/piyush/datasets/UCF101/videos_mp4
+  csv_path: /scratch/shared/beegfs/piyush/datasets/UCF101/metadata/test01.csv
+  ext: mp4
+  id_col: id
+  target: class
+
+hmdb51:
+  name: "HMDB51"
+  video_dir: /scratch/shared/beegfs/piyush/datasets/HMDB51/videos
+  csv_path: /scratch/shared/beegfs/piyush/datasets/HMDB51/metadata/test.csv
+  ext: avi
+  id_col: id
+  target: class
+
+kinetics-verbs:
+  name: "Kinetics-400 Verbs"
+  video_dir: /datasets/KineticsClean/
+  csv_path: /scratch/shared/beegfs/piyush/datasets/Kinetics400/metadata/val_vfc.csv
+  ext: mp4
+  id_col: id
+  target: class
