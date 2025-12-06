@@ -221,7 +221,10 @@ python evals/adverbs.py --model_path /path/to/download/tara --dataset vatex-adve
 
 #### Standard video tasks in [MMEB-v2](https://huggingface.co/datasets/TIGER-Lab/MMEB-V2)
 
-TODO
+To run standard video tasks in MMEB-v2, run:
+```sh
+python evals/mmebv2.py --model_path /path/to/download/tara 
+```
 
 #### Composed Video Retrieval
 

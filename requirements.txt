@@ -31,3 +31,4 @@ seaborn
 ipdb
 git+https://github.com/hassony2/torch_videovision
 natsort
+datasets==4.4.1
