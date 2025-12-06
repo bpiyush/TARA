@@ -23,3 +23,9 @@ pytorchvideo==0.1.5
 bitsandbytes==0.48.2
 xformers==0.0.29.post1
 flash-attn==2.8.3
+pandas
+matplotlib
+IPywidgets
+scikit-learn
+seaborn
+ipdb
