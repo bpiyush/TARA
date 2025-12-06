@@ -225,7 +225,10 @@ TODO
 
 #### Composed Video Retrieval
 
-TODO
+To run composed video retrieval on WebVid-CoVR, run:
+```sh
+python evals/covr.py --model_path /path/to/download/tara --dataset covr
+```
 
 
 ## Citation
