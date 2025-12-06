@@ -13,7 +13,42 @@ from datasets import load_dataset
 
 from shared.utils.log import tqdm_iterator, print_update
 from shared.utils.io import load_yml, load_jsonl
-from modeling_tara import TARA
+from modeling_tara import TARA, read_frames_decord
+
+
+def compute_video_embeddings(model: TARA, video_paths: dict, num_frames: int = 8) -> dict:
+    """
+    Compute video embeddings for a dictionary of video paths.
+    
+    Args:
+        model: TARA model instance
+        video_paths: Dictionary mapping video_id to video path
+        num_frames: Number of frames to sample from each video
+        
+    Returns:
+        Dictionary mapping video_id to embeddings
+    """
+    video_embs = {}
+    failed = []
+    
+    for video_id, video_path in tqdm_iterator(video_paths.items(), desc='Computing video embeddings'):
+        try:
+            with torch.no_grad():
+                zv = model.encode_vision(
+                    read_frames_decord(video_path, num_frames=num_frames).unsqueeze(0)
+                ).cpu().float().squeeze(0)
+                zv = torch.nn.functional.normalize(zv, dim=-1)
+            video_embs[video_id] = zv
+        except Exception as e:
+            print(f"Failed to process {video_id}: {str(e)}")
+            failed.append(video_id)
+            continue
+    
+    print(f"Successfully computed {len(video_embs)} video embeddings.")
+    if len(failed) > 0:
+        print(f"Failed to process {len(failed)} videos.")
+    
+    return video_embs
 
 
 def gather_text_embeddings(model: TARA, texts: list) -> dict:
@@ -50,6 +85,10 @@ if __name__ == "__main__":
     parser.add_argument('--data_root', type=str, 
                        default='/scratch/shared/beegfs/piyush/datasets/MMEB-V2',
                        help='Root directory for MMEB-v2 data')
+    parser.add_argument('--num_frames', type=int, default=8,
+                       help='Number of frames to sample from each video')
+    parser.add_argument('--compute_video_embeddings', action='store_true',
+                       help='Compute video embeddings if they do not exist')
     args = parser.parse_args()
 
     print('-' * 100)
@@ -79,9 +118,49 @@ if __name__ == "__main__":
     
     # Load video embeddings (should be pre-computed)
     video_emb_path = f"{data_root}/features/{args.model_name}_video_embeddings_mmebv2_video_cls.pt"
-    assert os.path.exists(video_emb_path), f"Video embeddings not found: {video_emb_path}"
-    video_embs = torch.load(video_emb_path)
-    print(f"Loaded video embeddings from {video_emb_path}")
+    
+    if os.path.exists(video_emb_path):
+        print(f"Loading pre-computed video embeddings from {video_emb_path}")
+        video_embs = torch.load(video_emb_path)
+        print(f"Loaded {len(video_embs)} video embeddings")
+    elif args.compute_video_embeddings:
+        print(f"Video embeddings not found at {video_emb_path}")
+        print("Computing video embeddings (this may take a while)...")
+        
+        # Gather all unique video IDs and their paths from all datasets
+        video_paths = {}
+        for ds_key in meta_config:
+            d = meta_config[ds_key]
+            data = load_jsonl(f"{data_root}/video-tasks/data/{d['json_name']}")
+            data = pd.DataFrame(data)
+            
+            # Construct video paths (you may need to adjust this based on your data structure)
+            # For now, assuming video_id contains the relative path
+            for video_id in data.video_id.unique():
+                if video_id not in video_paths:
+                    # Adjust this path construction as needed for your dataset
+                    video_path = f"{data_root}/video-tasks/videos/{video_id}"
+                    if os.path.exists(video_path):
+                        video_paths[video_id] = video_path
+        
+        if len(video_paths) == 0:
+            raise ValueError("No video paths found. Please check the video directory structure.")
+        
+        print(f"Found {len(video_paths)} unique videos to process")
+        video_embs = compute_video_embeddings(model, video_paths, num_frames=args.num_frames)
+        
+        # Save the computed embeddings
+        os.makedirs(os.path.dirname(video_emb_path), exist_ok=True)
+        torch.save(video_embs, video_emb_path)
+        print(f"Saved video embeddings to {video_emb_path}")
+    else:
+        raise FileNotFoundError(
+            f"Video embeddings not found: {video_emb_path}\n"
+            f"Either:\n"
+            f"  1. Pre-compute video embeddings and place them at the above path, OR\n"
+            f"  2. Run with --compute_video_embeddings flag to compute them now"
+        )
+    
     print('-' * 100)
 
     # SSv2
@@ -150,11 +229,76 @@ if __name__ == "__main__":
         '/users/piyush/projects/VLM2Vec/experiments/public/eval/video_ret.yaml'
     )
     
+    # This defines the huggingface repo and subset for each dataset
+    # (repo, subset, split)
+    json_paths = {
+        "MSR-VTT": ("VLM2Vec/MSR-VTT", "test_1k", "test"),
+        "MSVD": ("VLM2Vec/MSVD", None, "test"),
+        "DiDeMo": ("VLM2Vec/DiDeMo", None, "test"),
+        "YouCook2": ("lmms-lab/YouCook2", None, "val"),
+        "VATEX": ("VLM2Vec/VATEX", None, "test"),
+    }
+    video_id_extractor = {
+        "MSR-VTT": lambda x: x['video_id'],
+        "MSVD": lambda x: x['video_id'],
+        "DiDeMo": lambda x: x['video'].split('/')[-1].split('.')[0],
+        "YouCook2": lambda x: x["id"],
+        "VATEX": lambda x: x['videoID'],
+    }
+    video_root = "/scratch/shared/beegfs/piyush/datasets/MMEB-V2/video-tasks/frames/data/ziyan/video_retrieval"
+    captions_extractor = {
+        "MSR-VTT": lambda x: [x["caption"]],
+        "MSVD": lambda x: x["caption"],
+        "DiDeMo": lambda x: [x["caption"]],
+        "YouCook2": lambda x: [x['sentence']],
+        "VATEX": lambda x: x["enCap"],
+    }
+    
     # Load video embeddings (should be pre-computed)
     video_emb_path = f"{data_root}/features/{args.model_name}_video_embeddings_mmebv2_video_ret.pt"
-    assert os.path.exists(video_emb_path), f"Video embeddings not found: {video_emb_path}"
-    video_embs = torch.load(video_emb_path)
-    print(f"Loaded video embeddings from {video_emb_path}")
+    
+    if os.path.exists(video_emb_path):
+        print(f"Loading pre-computed video embeddings from {video_emb_path}")
+        video_embs = torch.load(video_emb_path)
+        print(f"Loaded {len(video_embs)} video embeddings")
+    elif args.compute_video_embeddings:
+        print(f"Video embeddings not found at {video_emb_path}")
+        print("Computing video embeddings (this may take a while)...")
+        
+        # Gather all unique video IDs and their paths from all datasets
+        video_paths = {}
+        for ds_key in meta_config:
+            d = meta_config[ds_key]
+            repo, subset, split = json_paths[ds_key]
+            df = pd.DataFrame(load_dataset(repo, subset)[split])
+            video_dir = f"{video_root}/{ds_key}/frames"
+            df['video_id'] = df.apply(lambda x: video_id_extractor[ds_key](x), axis=1)
+            
+            for video_id in df.video_id.unique():
+                if video_id not in video_paths:
+                    # For frame-based datasets, construct path to frame directory
+                    video_path = f"{video_dir}/{video_id}"
+                    if os.path.isdir(video_path):
+                        video_paths[video_id] = video_path
+        
+        if len(video_paths) == 0:
+            raise ValueError("No video paths found. Please check the video directory structure.")
+        
+        print(f"Found {len(video_paths)} unique videos to process")
+        video_embs = compute_video_embeddings(model, video_paths, num_frames=args.num_frames)
+        
+        # Save the computed embeddings
+        os.makedirs(os.path.dirname(video_emb_path), exist_ok=True)
+        torch.save(video_embs, video_emb_path)
+        print(f"Saved video embeddings to {video_emb_path}")
+    else:
+        raise FileNotFoundError(
+            f"Video embeddings not found: {video_emb_path}\n"
+            f"Either:\n"
+            f"  1. Pre-compute video embeddings and place them at the above path, OR\n"
+            f"  2. Run with --compute_video_embeddings flag to compute them now"
+        )
+    
     print('-' * 100)
     
     # This defines the huggingface repo and subset for each dataset

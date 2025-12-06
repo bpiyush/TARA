@@ -213,7 +213,7 @@ You can also run the same on `ucf101` and `hmdb51` by changing the `--dataset` f
 
 #### Adverb recognition
 
-To run adverb recognition on VATEX-Adverbs, run:
+To run adverb recognition on VATEX-Adverbs proposed by [Doughty et al.](https://hazeldoughty.github.io/Papers/PseudoAdverbs/), run:
 
 ```sh
 python evals/adverbs.py --model_path /path/to/download/tara --dataset vatex-adverbs
@@ -221,14 +221,14 @@ python evals/adverbs.py --model_path /path/to/download/tara --dataset vatex-adve
 
 #### Standard video tasks in [MMEB-v2](https://huggingface.co/datasets/TIGER-Lab/MMEB-V2)
 
-To run standard video tasks in MMEB-v2, run:
+To run standard video tasks in MMEB-v2 ([Meng et al.](https://arxiv.org/abs/2507.04590)), run:
 ```sh
 python evals/mmebv2.py --model_path /path/to/download/tara 
 ```
 
 #### Composed Video Retrieval
 
-To run composed video retrieval on WebVid-CoVR, run:
+To run composed video retrieval on WebVid-CoVR proposed by [Ventura et al.](https://arxiv.org/html/2308.14746v3), run:
 ```sh
 python evals/covr.py --model_path /path/to/download/tara --dataset covr
 ```
