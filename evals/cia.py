@@ -12,22 +12,8 @@ import matplotlib.pyplot as plt
 plt.rcParams["font.family"] = "serif"
 
 from shared.utils.log import tqdm_iterator
+from shared.utils.io import load_yml
 from modeling_tara import TARA, read_frames_decord
-
-
-# Constants
-DATA_ROOT = "/scratch/shared/beegfs/piyush/datasets"
-VIDEO_DIR = {
-    "ssv2": f"{DATA_ROOT}/SSv2/20bn-something-something-v2",
-    "epic": f"{DATA_ROOT}/EPIC-Kitchens-100/cut_clips",
-    "charades": f"{DATA_ROOT}/Charades/Charades_v1_480_cut_clips"
-}
-EXT = {
-    'ssv2': 'webm',
-    'epic': 'MP4',
-    'charades': 'mp4',
-}
-REPO_PATH = "/users/piyush/projects/TimeBound.v1/"
 
 
 def round_off(x):
@@ -49,26 +35,32 @@ def print_metrics_as_latex_row(metrics, v2t_metric='txt_r1', t2v_metric='img_map
 
 
 def load_data(dataset='ssv2'):
-    split_dir = f"{REPO_PATH}/adapt4change/chirality_in_action_splits"
-    csv_path = f"{split_dir}/cia-{dataset}-validation.csv"
-    assert os.path.exists(csv_path)
+    
+    # Load dataset config
+    cfg_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "datasets.yaml")
+    assert os.path.exists(cfg_path), f"Dataset config file {cfg_path} does not exist"
+    data_config = load_yml(cfg_path)[dataset]
+    
+    csv_path = data_config['csv_path']
+    video_dir = data_config['video_dir']
+    ext = data_config['ext']
+
+    # Load CSV
+    assert os.path.exists(csv_path), f"CSV file {csv_path} does not exist"
     df = pd.read_csv(csv_path)
 
     # Add text ID
     df['text_id'] = df[['chiral_triplet_id', 'chiral_label']].apply(
         lambda x: f"{x[0]}_{x[1]}", axis=1,
     )
-    video_dir = VIDEO_DIR[dataset]
-    ext = EXT[dataset]
 
     df['video_path'] = df['id'].apply(lambda x: f"{video_dir}/{x}.{ext}")
     df = df[df.video_path.apply(os.path.exists)]
     print("Number of rows: ", len(df))
     print("Sample row: ")
     print(json.dumps(df.iloc[0].to_dict(), indent=4))
-    
-    return df
 
+    return df
 
 
 def _compute_mean_average_precision(scores: np.ndarray, query_to_relevants: Dict[int, Union[int, List[int]]]) -> float:

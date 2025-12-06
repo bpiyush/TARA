@@ -1,0 +1,17 @@
+ssv2:
+  name: "Something Something v2"
+  video_dir: /scratch/shared/beegfs/piyush/datasets/SSv2/20bn-something-something-v2
+  csv_path: /users/piyush/projects/TimeBound.v1/adapt4change/chirality_in_action_splits/cia-ssv2-validation.csv
+  ext: webm
+
+epic:
+  name: "EPIC-Kitchens"
+  video_dir: /scratch/shared/beegfs/piyush/datasets/EPIC-Kitchens-100/cut_clips
+  csv_path: /users/piyush/projects/TimeBound.v1/adapt4change/chirality_in_action_splits/cia-epic-validation.csv
+  ext: MP4
+
+charades:
+  name: "Charades"
+  video_dir: /scratch/shared/beegfs/piyush/datasets/Charades/Charades_v1_480_cut_clips
+  csv_path: /users/piyush/projects/TimeBound.v1/adapt4change/chirality_in_action_splits/cia-charades-validation.csv
+  ext: mp4
