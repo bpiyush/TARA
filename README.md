@@ -206,14 +206,18 @@ You can also run the same on `epic` and `charades` by changing the `--dataset` f
 To run verb recognition on Kinetics-400 proposed by [Momeni et al.](https://arxiv.org/abs/2304.06708), run:
 
 ```sh
-python evals/zsar.py --dataset kinetics-verbs --model_path /path/to/download/tara
+python evals/zsar.py --model_path /path/to/download/tara --dataset kinetics-verbs
 ```
 
 You can also run the same on `ucf101` and `hmdb51` by changing the `--dataset` flag.
 
 #### Adverb recognition
 
-TODO
+To run adverb recognition on VATEX-Adverbs, run:
+
+```sh
+python evals/adverbs.py --model_path /path/to/download/tara --dataset vatex-adverbs
+```
 
 #### Standard video tasks in [MMEB-v2](https://huggingface.co/datasets/TIGER-Lab/MMEB-V2)
 

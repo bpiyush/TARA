@@ -39,3 +39,13 @@ kinetics-verbs:
   ext: mp4
   id_col: id
   target: class
+
+vatex-adverbs:
+  name: "VATEX Adverbs"
+  frame_dir: /scratch/shared/beegfs/piyush/datasets/MMEB-V2/video-tasks/frames/data/ziyan/video_retrieval/VATEX/frames
+  data_dir: /scratch/shared/beegfs/piyush/datasets/PseudoAdverbs
+  annotations_csv: /scratch/shared/beegfs/piyush/datasets/PseudoAdverbs/datasets/VATEX_Adverbs/annotations.csv
+  adverbs_csv: /scratch/shared/beegfs/piyush/datasets/PseudoAdverbs/datasets/VATEX_Adverbs/adverbs.csv
+  clip_id_col: clip_id
+  action_col: clustered_action
+  adverb_col: clustered_adverb
