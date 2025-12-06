@@ -49,3 +49,10 @@ vatex-adverbs:
   clip_id_col: clip_id
   action_col: clustered_action
   adverb_col: clustered_adverb
+
+covr:
+  name: "WebVid-CoVR"
+  video_dir: /datasets/WebVid/videos
+  csv_path: /scratch/shared/beegfs/piyush/datasets/WebVid-CoVR/webvid8m-covr_test-cleaned.csv
+  problematic_videos:
+    - /datasets/WebVid/videos/108401_108450/6507308.mp4
