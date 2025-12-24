@@ -237,9 +237,15 @@ def itm_eval(
     i2t_recall_at_1 = 100.0 * np.sum(i2t_ranks < 1) / len(i2t_ranks)
     i2t_recall_at_5 = 100.0 * np.sum(i2t_ranks < 5) / len(i2t_ranks) 
     i2t_recall_at_10 = 100.0 * np.sum(i2t_ranks < 10) / len(i2t_ranks)
+    i2t_recall_at_50 = 100.0 * np.sum(i2t_ranks < 50) / len(i2t_ranks)
     
     if verbose:
-        print(f"I2T Results - R@1: {i2t_recall_at_1:.2f}%, R@5: {i2t_recall_at_5:.2f}%, R@10: {i2t_recall_at_10:.2f}%")
+        print(
+            f"I2T Results - R@1: {i2t_recall_at_1:.2f}%,"\
+            f" R@5: {i2t_recall_at_5:.2f}%,"\
+            f" R@10: {i2t_recall_at_10:.2f}%,"\
+            f" R@50: {i2t_recall_at_50:.2f}%"
+        )
     
     # ==========================================
     # Part 2: Text-to-Image Retrieval (T2I)  
@@ -291,9 +297,15 @@ def itm_eval(
     t2i_recall_at_1 = 100.0 * np.sum(t2i_ranks < 1) / len(t2i_ranks)
     t2i_recall_at_5 = 100.0 * np.sum(t2i_ranks < 5) / len(t2i_ranks)
     t2i_recall_at_10 = 100.0 * np.sum(t2i_ranks < 10) / len(t2i_ranks)
+    t2i_recall_at_50 = 100.0 * np.sum(t2i_ranks < 50) / len(t2i_ranks)
     
     if verbose:
-        print(f"T2I Results - R@1: {t2i_recall_at_1:.2f}%, R@5: {t2i_recall_at_5:.2f}%, R@10: {t2i_recall_at_10:.2f}%")
+        print(
+            f"T2I Results - R@1: {t2i_recall_at_1:.2f}%,"\
+            f" R@5: {t2i_recall_at_5:.2f}%,"\
+            f" R@10: {t2i_recall_at_10:.2f}%,"\
+            f" R@50: {t2i_recall_at_50:.2f}%"
+        )
     
     # ==========================================
     # Part 3: Aggregate Final Metrics
@@ -301,7 +313,7 @@ def itm_eval(
     
     # Compute mean recalls for each direction
     i2t_mean_recall = (i2t_recall_at_1 + i2t_recall_at_5 + i2t_recall_at_10) / 3.0
-    t2i_mean_recall = (t2i_recall_at_1 + t2i_recall_at_5 + t2i_recall_at_10) / 3.0
+    t2i_mean_recall = (t2i_recall_at_1 + t2i_recall_at_5 + t2i_recall_at_10) / 4.0
     
     # Compute overall mean across both directions
     overall_mean_recall = (i2t_mean_recall + t2i_mean_recall) / 2.0
@@ -312,12 +324,14 @@ def itm_eval(
         "txt_r1": i2t_recall_at_1,      # Image-to-text Recall@1
         "txt_r5": i2t_recall_at_5,      # Image-to-text Recall@5  
         "txt_r10": i2t_recall_at_10,    # Image-to-text Recall@10
+        "txt_r50": i2t_recall_at_50,    # Image-to-text Recall@50
         "txt_r_mean": i2t_mean_recall,  # Mean of I2T recalls
         
         # Text-to-Image retrieval metrics
         "img_r1": t2i_recall_at_1,      # Text-to-image Recall@1
         "img_r5": t2i_recall_at_5,      # Text-to-image Recall@5
         "img_r10": t2i_recall_at_10,    # Text-to-image Recall@10  
+        "img_r50": t2i_recall_at_50,    # Text-to-image Recall@50
         "img_r_mean": t2i_mean_recall,  # Mean of T2I recalls
         
         # Overall performance
