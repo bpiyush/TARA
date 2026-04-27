@@ -32,6 +32,7 @@ dependencies = [
     "imageio-ffmpeg>=0.4.0",
     "bitsandbytes>=0.43.0",
     "pandas",
+    "pyarrow",
     "natsort",
     "termcolor",
     "tqdm",
