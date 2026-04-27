@@ -1,36 +1,43 @@
-
-# ![](assets/tara-logo.png) TARA: Time-Aware Retrieval Adaptation for Video Understanding
+# ![](assets/tara-logo.png) TARA: *T*ext *A*dapted *R*etrieval *A*lignment for Nuanced Video Retrieval
 <!-- # <img src="./assets/logo.png" width="24"> TARA: Time-Aware Retrieval Adaptation for Video Understanding -->
 
 This repository contains inference and evaluation code for the TARA model based on the paper:
-TARA: Simple and Efficient Time Aware Retrieval Adaptation of MLLMs for Video Understanding.
+[Adapting MLLMs for Nuanced Video Retrieval](https://arxiv.org/abs/2512.13511)
 
-<!-- Show arch fig in 80% of the screen and center it -->
-<img src="./assets/arch.png" width="75%" style="display: block; margin: 0 auto;">
+<p align="center">
+  <a href="https://bpiyush.github.io/tara-website/" target="_blank">
+    <img src="https://img.shields.io/badge/Project-Page-blue" alt="Project Page">
+  </a>
+  &nbsp;&nbsp;&nbsp;
+  <a href="https://github.com/bpiyush/TARA" target="_blank">
+    <img src="https://img.shields.io/badge/GitHub-Code-black?logo=github" alt="GitHub Code">
+  </a>
+  &nbsp;&nbsp;&nbsp;
+  <a href="https://arxiv.org/abs/2512.13511" target="_blank">
+    <img src="https://img.shields.io/badge/arXiv-Paper-b31b1b?logo=arxiv&logoColor=white" alt="arXiv">
+  </a>
+  &nbsp;&nbsp;&nbsp;
+  <a href="https://huggingface.co/datasets/bpiyush/chirality-in-action" target="_blank">
+    <img src="https://huggingface.co/datasets/huggingface/badges/resolve/main/dataset-on-hf-md-dark.svg" alt="Dataset on Hugging Face">
+  </a>
+</p>
+
+<!-- Show arch fig in 75% of the screen and center it -->
+<p align="center">
+  <img src="./assets/arch.png" width="75%" alt="TARA architecture">
+</p>
 <!-- Add a caption with small font size and center it such that it align with image width and center it-->
-<p style="text-align: left; font-size: 13px; width: 75%; display: block; margin: 0 auto;"><b>TARA Architecture:</b> We use EOL prompt to embed videos using an MLLM (Tarsier-7B). We train the LLM weights with contrastive loss on a combination of time-aware text triplets and static-biased text triplets.</p>
+<p style="text-align: left; font-size: 13px; width: 75%; display: block; margin: 0 auto;"><b>TARA Architecture:</b> We use EOL prompt to embed videos using an MLLM (Tarsier2-7B). We train the LLM weights with contrastive loss on carefully crafted hard-negatives to instill (i) temporal, (ii) negation and (iii) multimodal nuances in the embedding space.</p>
 
-
-```bibtex
-@article{tara2025,
-  title={TARA: Simple and Efficient Time Aware Retrieval Adaptation of MLLMs for Video Understanding},
-  author={Piyush Bagad and Andrew Zisserman},
-  year={2025}
-  journal={arXiv preprint arXiv:XXXX.XXXXX}
-}
-```
 
 <!-- Add a Table of Contents here -->
 ## Table of Contents
 - [Installation & Setup](#installation--setup)
 - [Quick Start](#quick-start)
 - [Evaluation](#evaluation)
-  - [Chiral Retrieval](#chiral-retrieval)
-  - [Verb recognition](#verb-recognition)
-  - [Adverb recognition](#adverb-recognition)
-  - [Standard video tasks in MMEB-v2](#standard-video-tasks-in-mmeb-v2)
-  - [Video captioning](#video-captioning)
-  - [Composed Video Retrieval](#composed-video-retrieval)
+  - [Data Preparation](#data-preparation)
+  - [Embedding Computation](#embedding-computation)
+  - [General evaluation: MMEB-V2 (Meng et al.)](#general-evaluation-mmeb-v2-meng-et-al)
 - [Citation](#citation)
 - [License](#license)
 
@@ -102,7 +109,7 @@ TARA is primarily designed to encode videos and texts in a joint embedding space
 
 ```python
 import torch
-from modeling_tara import TARA, read_frames_decord
+from modeling_tara import TARA
 
 model = TARA.from_pretrained(
     "/path/to/download/tara",  # Load from current directory
@@ -114,22 +121,18 @@ print(f"Number of parameters: {round(n_params/1e9, 3)}B")
 
 # Embed a video
 video_path = "./assets/folding_paper.mp4"
-video_tensor = read_frames_decord(video_path, num_frames=16)
-video_tensor = video_tensor.unsqueeze(0)
-video_tensor = video_tensor.to(model.model.device)
 with torch.no_grad():
-    video_emb = model.encode_vision(video_tensor).cpu().squeeze(0).float()
-print(f"Video shape: {video_tensor.shape}")  # torch.Size([1, 16, 3, 240, 426])
-print(f"Video embedding shape: {video_emb.shape}")  # torch.Size([4096])
+    video_emb = model.encode_vision(video_path).cpu().squeeze(0).float()
+print(f"Video embedding shape: {video_emb.shape}")  # torch.Size([3584])
 
 # Embed a text
 text = ['someone is folding a paper', 'cutting a paper', 'someone is folding a paper']
 with torch.no_grad():
     text_emb = model.encode_text(text).cpu().float()
-print(f"Text embedding shape: {text_emb.shape}")  # torch.Size([3, 4096])
+print(f"Text embedding shape: {text_emb.shape}")  # torch.Size([3, 3584])
 ```
 
-For more details, see the script at [demo_usage.py](demo_usage.py). You can run it:
+For a more detailed demo, see the script at [demo_usage.py](demo_usage.py). You can run it:
 
 ```sh
 python demo_usage.py --model_path /path/to/download/tara
@@ -141,45 +144,50 @@ The output should look something like this:
 TARA Model Demo
 ============================================================
 
-[1/6] Loading model...
-[ MODEL ] Loading TARA from /work/piyush/pretrained_checkpoints/TARA/ [..............]
-### do_image_padding is set as False, images will be resized directly!
+[1/5] Loading model...
+The argument `trust_remote_code` is to be used with Auto classes. It has no effect here and is ignored.
+Unrecognized keys in `rope_scaling` for 'rope_type'='default': {'mrope_section'}
+The argument `trust_remote_code` is to be used with Auto classes. It has no effect here and is ignored.
 The model weights are not tied. Please use the `tie_weights` method before using the `infer_auto_device` function.
-Loading checkpoint shards: 100%|██████████████████████████████████████████████████████████████████████████████████████| 3/3 [00:03<00:00,  1.05s/it]
+Loading checkpoint shards: 100%|████████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [00:03<00:00,  1.07it/s]
 ✓ Model loaded successfully!
-Number of parameters: 7.063B
+Number of parameters: 8.291B
 ----------------------------------------------------------------------------------------------------
 
-[2/6] Testing video encoding and captioning ...
+[2/5] Testing video encoding ...
+From v4.47 onwards, when a model cache is to be returned, `generate` will return a `Cache` instance instead by default (as opposed to the legacy tuple of tuples format). If you want to keep returning the legacy format, please set `return_legacy_cache=True`.
 ✓ Video encoded successfully!
-Video shape: torch.Size([1, 16, 3, 240, 426])
-Video embedding shape: torch.Size([4096])
-Video caption: A hand is seen folding a white paper on a gray carpeted floor. The paper is opened flat on the surface, and then the hand folds it in half vertically, creating a crease in the middle. The hand continues to fold the paper further, resulting in a smaller, more compact size. The background remains a consistent gray carpet throughout the video.
+Video embedding shape: torch.Size([3584])
 ----------------------------------------------------------------------------------------------------
 
-[3/6] Testing text encoding...
+[3/5] Testing text encoding...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
 ✓ Text encoded successfully!
 Text: ['someone is folding a paper', 'cutting a paper', 'someone is unfolding a paper']
-Text embedding shape: torch.Size([3, 4096])
+Text embedding shape: torch.Size([3, 3584])
 
-[4/6] Computing video-text similarities...
+[4/5] Computing video-text similarities...
 ✓ Similarities computed!
-  'someone is folding a paper': 0.5039
-  'cutting a paper': 0.3022
-  'someone is unfolding a paper': 0.3877
+  'someone is folding a paper': 0.6488
+  'cutting a paper': 0.3952
+  'someone is unfolding a paper': 0.3009
 ----------------------------------------------------------------------------------------------------
 
-[5/6] Testing negation example...
-Image embedding shape: torch.Size([2, 4096])
+[5/5] Testing negation example...
+Image embedding shape: torch.Size([2, 3584])
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
 Text query:  ['an image of a cat but there is no dog in it']
-Text-Image similarity: tensor([[0.2585, 0.1449]])
+Text-Image similarity: tensor([[0.5169, 0.3659]])
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
 Text query:  ['an image of a cat and a dog together']
-Text-Image similarity: tensor([[0.2815, 0.4399]])
+Text-Image similarity: tensor([[0.4364, 0.6004]])
 ----------------------------------------------------------------------------------------------------
 
-[6/6] Testing composed video retrieval...
-Source-Target similarity with edit: 0.6476313471794128
+[Bonus] Testing composed video retrieval...
+Source-Target similarity with edit: 0.757888674736023
 
 ============================================================
 Demo completed successfully! 🎉
@@ -189,60 +197,80 @@ Demo completed successfully! 🎉
 
 ## Evaluation
 
-We evaluate TARA on a diverse set of video understanding tasks starting with Chiral Action Retrieval proposed in [Bagad et al (2025)](https://arxiv.org/abs/2509.08502).
-For each task, we provide a single script that you can run with TARA (or any similar MLLM).
 
-#### Chiral Retrieval
+### Data Preparation
 
-CiA has three datasets: SSv2, EPIC and Charades.
-We evaluate TARA on these datasets using the following script:
+We release the nuanced video retrieval splits used in the dataset in [data/](data/) folder.
+For ease of use, we have combined all the data for (i) temporal, (ii) negation and (iii) multimodal
+nuance into a single file where each entry is a video/text/video-text/image, etc.
+
+```sh
+data
+├── nuanced_retrieval_inputs-test.csv # List of examples to embed (video, text, composed video-text, etc.) for test set
+├── nuanced_retrieval_inputs-val.csv # List of examples to embed (video, text, composed video-text, etc.) for validation set
+├── nuanced_retrieval_labels-test.json # Labels for test set
+└── nuanced_retrieval_labels-val.json # Labels for validation set
+```
+
+An example input row looks like this:
+```json
+{
+  'id': '138629', 
+  'value': '138629',
+  'nuance': 'time',
+  'source': 'cia-ssv2',
+  'modality': 'video',
+}
+```
+where `id`is the unique identified, `value` is actual value (e.g., for a text caption, the ID can be different and value stores the actual caption), `nuance` is the type of nuance, 
+`source` is the source of the example (e.g., `cia-ssv2` for SSv2), and `modality` is the modality of the example (e.g., `video` or `text`).
+
+
+The coresponding label looks like this:
+```json
+['12055391_1.0']
+```
+which denotes the `id` of the text associated with the video.
+
+Finally, set the right paths to the data directories in [evals/compute_embeddings.py](evals/compute_embeddings.py) 
+based on your local setup.
+
+### Embedding Computation
+
+First, you need to compute the embeddings for the entire dataset. You can do this by running the following script:
+
 ```bash
-python evals/cia.py --model_path /path/to/download/tara --dataset ssv2
-```
-You can also run the same on `epic` and `charades` by changing the `--dataset` flag.
-
-#### Verb recognition
-
-To run verb recognition on Kinetics-400 proposed by [Momeni et al.](https://arxiv.org/abs/2304.06708), run:
-
-```sh
-python evals/zsar.py --model_path /path/to/download/tara --dataset kinetics-verbs
+python evals/compute_embeddings.py \
+--model_path /path/to/download/tara \
+--csv_path ./data/nuanced_retrieval_inputs-val.csv \
+--model_name tara_7b
 ```
 
-You can also run the same on `ucf101` and `hmdb51` by changing the `--dataset` flag.
+Then, run the script to compute retrieval metrics.
 
-#### Adverb recognition
-
-To run adverb recognition on VATEX-Adverbs proposed by [Doughty et al.](https://hazeldoughty.github.io/Papers/PseudoAdverbs/), run:
-
-```sh
-python evals/adverbs.py --model_path /path/to/download/tara --dataset vatex-adverbs
+```bash
+python evals/compute_metrics.py \
+--model_path /path/to/download/tara \
+--csv_path ./data/nuanced_retrieval_inputs-val.csv \
+--lab_path ./data/nuanced_retrieval_labels-val.json \
+--model_name tara_7b
 ```
 
-#### Standard video tasks in [MMEB-v2](https://huggingface.co/datasets/TIGER-Lab/MMEB-V2)
+### General evaluation: MMEB-V2 ([Meng et al.](https://arxiv.org/abs/2507.04590))
 
-To run standard video tasks in MMEB-v2 ([Meng et al.](https://arxiv.org/abs/2507.04590)), run:
-```sh
-python evals/mmebv2.py --model_path /path/to/download/tara 
-```
+We evaluate on the video classification and video retrieval tasks in MMEB-V2 to demonstrate the generalizability of TARA.
 
-#### Composed Video Retrieval
-
-To run composed video retrieval on WebVid-CoVR proposed by [Ventura et al.](https://arxiv.org/html/2308.14746v3), run:
-```sh
-python evals/covr.py --model_path /path/to/download/tara --dataset covr
-```
-
+TODO
 
 ## Citation
 
 If you use this model, please cite:
 ```bibtex
 @article{tara2025,
-  title={TARA: Simple and Efficient Time Aware Retrieval Adaptation of MLLMs for Video Understanding},
+  title={Adapting MLLMs for Nuanced Video Retrieval},
   author={Piyush Bagad and Andrew Zisserman},
   year={2025}
-  journal={arXiv preprint arXiv:XXXX.XXXXX}
+  journal={arXiv preprint arXiv:2512.13511}
 }
 ```
 
