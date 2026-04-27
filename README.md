@@ -1,11 +1,11 @@
 
-# ![](assets/tara-logo.png) TARA: Time-Aware Retrieval Adaptation for Video Understanding
+# ![](assets/tara-logo.png) TARA: Text-Adapted Retrieval Alignment for Nuanced Video Retrieval
 <!-- # <img src="./assets/logo.png" width="24"> TARA: Time-Aware Retrieval Adaptation for Video Understanding -->
 
 Sample change.
 
 This repository contains inference and evaluation code for the TARA model based on the paper:
-TARA: Simple and Efficient Time Aware Retrieval Adaptation of MLLMs for Video Understanding.
+[Adapting MLLMs for Nuanced Video Retrieval](https://arxiv.org/abs/2512.13511)
 
 <!-- Show arch fig in 80% of the screen and center it -->
 <img src="./assets/arch.png" width="75%" style="display: block; margin: 0 auto;">
@@ -190,6 +190,57 @@ Demo completed successfully! 🎉
 
 
 ## Evaluation
+
+
+### Data 
+
+We release the nuanced video retrieval splits used in the dataset in [data/](data/) folder.
+For ease of use, we have combined all the data for (i) temporal, (ii) negation and (iii) multimodal
+nuance into a single file where each entry is a video/text/video-text/image, etc.
+
+```sh
+data
+├── nuanced_retrieval_inputs-test.csv # List of examples to embed (video, text, composed video-text, etc.) for test set
+├── nuanced_retrieval_inputs-val.csv # List of examples to embed (video, text, composed video-text, etc.) for validation set
+├── nuanced_retrieval_labels-test.json # Labels for test set
+└── nuanced_retrieval_labels-val.json # Labels for validation set
+```
+
+An example input row looks like this:
+```json
+{
+  'id': '138629', 
+  'value': '138629',
+  'nuance': 'time',
+  'source': 'cia-ssv2',
+  'modality': 'video',
+}
+```
+where `id`is the unique identified, `value` is actual value (e.g., for a text caption, the ID can be different and value stores the actual caption), `nuance` is the type of nuance, 
+`source` is the source of the example (e.g., `cia-ssv2` for SSv2), and `modality` is the modality of the example (e.g., `video` or `text`).
+
+
+The coresponding label looks like this:
+```json
+['12055391_1.0']
+```
+which denotes the `id` of the text associated with the video.
+
+### Evaluation
+
+First, you need to compute the embeddings for the entire dataset. You can do this by running the following script:
+
+TODO
+
+Then, run the script to compute retrieval metrics.
+
+TODO
+
+### General evaluation: MMEB-V2
+
+TODO
+
+
 
 We evaluate TARA on a diverse set of video understanding tasks starting with Chiral Action Retrieval proposed in [Bagad et al (2025)](https://arxiv.org/abs/2509.08502).
 For each task, we provide a single script that you can run with TARA (or any similar MLLM).
