@@ -2,6 +2,8 @@
 # ![](assets/tara-logo.png) TARA: Time-Aware Retrieval Adaptation for Video Understanding
 <!-- # <img src="./assets/logo.png" width="24"> TARA: Time-Aware Retrieval Adaptation for Video Understanding -->
 
+Sample change.
+
 This repository contains inference and evaluation code for the TARA model based on the paper:
 TARA: Simple and Efficient Time Aware Retrieval Adaptation of MLLMs for Video Understanding.
 
