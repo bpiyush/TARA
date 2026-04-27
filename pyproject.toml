@@ -33,6 +33,7 @@ dependencies = [
     "bitsandbytes>=0.43.0",
     "pandas",
     "pyarrow",
+    "func-timeout",
     "natsort",
     "termcolor",
     "tqdm",
