@@ -22,8 +22,10 @@ This repository contains inference and evaluation code for the TARA model based 
   </a>
 </p>
 
-<!-- Show arch fig in 80% of the screen and center it -->
-<img src="./assets/arch.png" width="75%" style="display: block; margin: 0 auto;">
+<!-- Show arch fig in 75% of the screen and center it -->
+<p align="center">
+  <img src="./assets/arch.png" width="75%" alt="TARA architecture">
+</p>
 <!-- Add a caption with small font size and center it such that it align with image width and center it-->
 <p style="text-align: left; font-size: 13px; width: 75%; display: block; margin: 0 auto;"><b>TARA Architecture:</b> We use EOL prompt to embed videos using an MLLM (Tarsier2-7B). We train the LLM weights with contrastive loss on carefully crafted hard-negatives to instill (i) temporal, (ii) negation and (iii) multimodal nuances in the embedding space.</p>
 
@@ -121,13 +123,13 @@ print(f"Number of parameters: {round(n_params/1e9, 3)}B")
 video_path = "./assets/folding_paper.mp4"
 with torch.no_grad():
     video_emb = model.encode_vision(video_path).cpu().squeeze(0).float()
-print(f"Video embedding shape: {video_emb.shape}")  # torch.Size([4096])
+print(f"Video embedding shape: {video_emb.shape}")  # torch.Size([3584])
 
 # Embed a text
 text = ['someone is folding a paper', 'cutting a paper', 'someone is folding a paper']
 with torch.no_grad():
     text_emb = model.encode_text(text).cpu().float()
-print(f"Text embedding shape: {text_emb.shape}")  # torch.Size([3, 4096])
+print(f"Text embedding shape: {text_emb.shape}")  # torch.Size([3, 3584])
 ```
 
 For a more detailed demo, see the script at [demo_usage.py](demo_usage.py). You can run it:
