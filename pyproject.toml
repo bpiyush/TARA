@@ -38,14 +38,13 @@ dependencies = [
     "termcolor",
     "tqdm",
     "PyYAML",
-]
-
-[project.optional-dependencies]
-eval = [
-    "scikit-learn",
     "matplotlib",
     "seaborn",
+    "scikit-learn",
     "datasets>=4.0.0",
+    "IPython",
+    "ipywidgets",
+    "ffmpeg-python",
 ]
 
 [tool.setuptools]
