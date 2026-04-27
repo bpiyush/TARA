@@ -1,11 +1,12 @@
 import os
+import importlib.resources as pkg_resources
 from abc import ABCMeta, abstractmethod
 from typing import Optional, Union, Dict, List
 from termcolor import colored
 
 import torch
 from transformers import (
-    LlavaConfig, 
+    LlavaConfig,
 )
 import decord
 import PIL.Image
@@ -13,6 +14,15 @@ from tarsier2.dataset.utils import format_one_sample
 from tarsier2.modeling_tarsier2 import Tarsier2ForConditionalGeneration
 from tarsier2.modeling_qwen2_vl_fast import Qwen2VLForCausalLM
 from tarsier2.dataset.tarsier_datamodule import init_processor
+
+
+def _get_tarsier2_config_path() -> str:
+    """Resolve path to tarsier2/default_config.yaml regardless of install mode."""
+    try:
+        return str(pkg_resources.files("tarsier2").joinpath("default_config.yaml"))
+    except Exception:
+        # Fallback: relative to this file (editable install / running from repo root)
+        return os.path.join(os.path.dirname(os.path.abspath(__file__)), "tarsier2", "default_config.yaml")
 
 decord.bridge.set_bridge("torch")
 
@@ -163,11 +173,7 @@ class BaseModelForTARA(BaseModel):
             # self.tokenizer = self.processor.tokenizer
             
             import shared.utils as su
-            self.base_config = su.io.load_yml(
-                os.path.join(
-                    su.log.repo_path, 'tarsier2/default_config.yaml'
-                )
-            )
+            self.base_config = su.io.load_yml(_get_tarsier2_config_path())
             self.super_processor = init_processor(model_name_or_path, self.base_config)
             self.processor = self.super_processor.processor
             self.tokenizer = self.processor.tokenizer
@@ -177,19 +183,9 @@ class BaseModelForTARA(BaseModel):
                 model_name_or_path,
                 trust_remote_code=True,
             )
-            # from tarsier2.tarsier2_processor import TarsierProcessor
-            # self.processor = TarsierProcessor.from_pretrained(
-            #     model_name_or_path,
-            #     padding_side='left',
-            #     trust_remote_code=True,
-            # )
             # Load base config
             import shared.utils as su
-            self.base_config = su.io.load_yml(
-                os.path.join(
-                    su.log.repo_path, 'tarsier2/default_config.yaml'
-                )
-            )
+            self.base_config = su.io.load_yml(_get_tarsier2_config_path())
             self.super_processor = init_processor(model_name_or_path, self.base_config)
             self.processor = self.super_processor.processor
             self.tokenizer = self.processor.tokenizer
@@ -230,9 +226,7 @@ class BaseModelForTARA(BaseModel):
         
         import shared.utils as su
         from tarsier2.dataset.tarsier_datamodule import init_processor
-        base_config = su.io.load_yml(
-            os.path.join(su.log.repo_path, 'models/tarsier2/default_config.yaml'),
-        )
+        base_config = su.io.load_yml(_get_tarsier2_config_path())
         super_processor = init_processor(
             mllm_path,
             base_config,
