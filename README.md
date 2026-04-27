@@ -38,6 +38,7 @@ This repository contains inference and evaluation code for the TARA model based 
   - [Data Preparation](#data-preparation)
   - [Embedding Computation](#embedding-computation)
   - [General evaluation: MMEB-V2 (Meng et al.)](#general-evaluation-mmeb-v2-meng-et-al)
+- [Training](#training)
 - [Citation](#citation)
 - [License](#license)
 
@@ -260,7 +261,64 @@ python evals/compute_metrics.py \
 
 We evaluate on the video classification and video retrieval tasks in MMEB-V2 to demonstrate the generalizability of TARA.
 
-TODO
+First, compute video embeddings for MMEB-V2:
+
+```bash
+# Video classification tracks
+python evals/compute_video_embeddings_mmeb.py \
+  --model_path /path/to/download/tara \
+  --model_name tara_7b \
+  --task cls
+
+# Video retrieval tracks
+python evals/compute_video_embeddings_mmeb.py \
+  --model_path /path/to/download/tara \
+  --model_name tara_7b \
+  --task ret
+```
+
+Then compute text embeddings:
+
+```bash
+# Classification text pools
+python evals/compute_text_embeddings_mmeb.py \
+  --model_path /path/to/download/tara \
+  --model_name tara_7b \
+  --task cls
+
+# Retrieval text pools
+python evals/compute_text_embeddings_mmeb.py \
+  --model_path /path/to/download/tara \
+  --model_name tara_7b \
+  --task ret
+```
+
+Finally, compute MMEB-V2 metrics:
+
+```bash
+python evals/compute_metrics_mmebv2.py \
+  --model_path /path/to/download/tara \
+  --model_name tara_7b \
+  --task all
+```
+
+By default, embeddings and metrics are saved to:
+
+```bash
+/path/to/download/tara/embs/tara_7b_video_embeddings_mmebv2_video_cls.pt
+/path/to/download/tara/embs/tara_7b_video_embeddings_mmebv2_video_ret.pt
+/path/to/download/tara/embs/tara_7b_text_embeddings_mmebv2_text_cls.pt
+/path/to/download/tara/embs/tara_7b_text_embeddings_mmebv2_text_ret.pt
+/path/to/download/tara/embs/metrics_tara_7b_mmebv2.json
+```
+
+If your MMEB-V2 data/config paths are different, override:
+`--data_root`, `--video_cls_cfg`, `--video_ret_cfg`, `--video_ret_root`, `--save_dir`, and `--feat_dir`.
+
+
+## Training
+
+Coming soon: we are preparing the training code for TARA and should be available soon.
 
 ## Citation
 
