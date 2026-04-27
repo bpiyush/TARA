@@ -226,15 +226,29 @@ The coresponding label looks like this:
 ```
 which denotes the `id` of the text associated with the video.
 
+Finally, set the right paths to the data directories in [evals/compute_embeddings.py](evals/compute_embeddings.py) 
+based on your local setup.
+
 ### Evaluation
 
 First, you need to compute the embeddings for the entire dataset. You can do this by running the following script:
 
-TODO
+```bash
+python evals/compute_embeddings.py \
+--model_path /path/to/download/tara \
+--csv_path ./data/nuanced_retrieval_inputs-val.csv \
+--model_name tara_7b
+```
 
 Then, run the script to compute retrieval metrics.
 
-TODO
+```bash
+python evals/compute_metrics.py \
+--model_path /path/to/download/tara \
+--csv_path ./data/nuanced_retrieval_inputs-val.csv \
+--lab_path ./data/nuanced_retrieval_labels-val.json \
+--model_name tara_7b
+```
 
 ### General evaluation: MMEB-V2
 

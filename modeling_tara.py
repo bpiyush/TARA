@@ -1,6 +1,7 @@
 import os
 from abc import ABCMeta, abstractmethod
 from typing import Optional, Union, Dict, List
+from termcolor import colored
 
 import torch
 from transformers import (
@@ -43,7 +44,7 @@ class BaseModel(metaclass=ABCMeta):
         load_llm: bool = False,
         device_map: Optional[Union[str, Dict[str, int]]] = None,
         **kwargs):
-        print(f'Loading {cls.__name__} from {model_name_or_path}')
+        colored(f'Loading {cls.__name__} from {model_name_or_path}')
 
         return cls(model_name_or_path, load_llm=load_llm, device_map=device_map, **kwargs)
 
@@ -277,11 +278,11 @@ class TARA(BaseModelForTARA, EncodeMixin):
     
     def encode_vision_with_text(self, video_path: str, text: str) -> torch.Tensor:
         ext = video_path.split('.')[-1]
-        if ext in ['mp4', 'avi', 'mov', 'mkv', 'webm']:
-            is_video = True
-        else:
-            is_video = False
-        assert not is_video
+        # if ext in ['mp4', 'avi', 'mov', 'mkv', 'webm']:
+        #     is_video = True
+        # else:
+        #     is_video = False
+        # assert not is_video
         prompt = EOL_PROMPTS["video_edit"].replace('<sent>', text)
         sample = format_one_sample(media_file=video_path, prompt=prompt)
         sample = self.super_processor(sample)
