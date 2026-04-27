@@ -12,36 +12,28 @@ def main(model_path: str = "."):
     print(colored("="*60, 'yellow'))
     
     # Load model from current directory
-    print(colored("\n[1/6] Loading model...", 'cyan'))
+    print(colored("\n[1/5] Loading model...", 'cyan'))
     model = TARA.from_pretrained(
         model_path,  # Load from current directory
         device_map='auto',
         torch_dtype=torch.bfloat16,
+        attn_implementation='flash_attention_2',
     )
     
     n_params = sum(p.numel() for p in model.model.parameters())
-    print(colored(f"✓ Model loaded successfully!", 'green'))
+    print(colored("✓ Model loaded successfully!", 'green'))
     print(f"Number of parameters: {round(n_params/1e9, 3)}B")
     print("-" * 100)
     
     # Encode a sample video
-    print(colored("\n[2/6] Testing video encoding and captioning ...", 'cyan'))
+    print(colored("\n[2/5] Testing video encoding ...", 'cyan'))
     video_path = "./assets/folding_paper.mp4"
     try:
-        video_tensor = read_frames_decord(video_path, num_frames=16)
-        video_tensor = video_tensor.unsqueeze(0)
-        video_tensor = video_tensor.to(model.model.device)
-        
         with torch.no_grad():
-            video_emb = model.encode_vision(video_tensor).cpu().squeeze(0).float()
-            
-            # Get caption for the video
-            video_caption = model.describe(video_tensor)[0]
+            video_emb = model.encode_vision(video_path).cpu().squeeze(0).float()
         
         print(colored("✓ Video encoded successfully!", 'green'))
-        print(f"Video shape: {video_tensor.shape}")  # torch.Size([1, 16, 3, 240, 426])
         print(f"Video embedding shape: {video_emb.shape}")  # torch.Size([4096])
-        print(colored(f"Video caption: {video_caption}", 'magenta'))
     except FileNotFoundError:
         print(colored(f"⚠ Video file not found: {video_path}", 'red'))
         print(colored("  Please add a video file or update the path in demo_usage.py", 'yellow'))
@@ -49,7 +41,7 @@ def main(model_path: str = "."):
     print("-" * 100)
     
     # Encode sample texts
-    print(colored("\n[3/6] Testing text encoding...", 'cyan'))
+    print(colored("\n[3/5] Testing text encoding...", 'cyan'))
     text = ['someone is folding a paper', 'cutting a paper', 'someone is unfolding a paper']
     # NOTE: It can also take a single string
     
@@ -62,7 +54,7 @@ def main(model_path: str = "."):
     
     # Compute similarities if video was encoded
     if video_emb is not None:
-        print(colored("\n[4/6] Computing video-text similarities...", 'cyan'))
+        print(colored("\n[4/5] Computing video-text similarities...", 'cyan'))
         similarities = torch.cosine_similarity(
             video_emb.unsqueeze(0).unsqueeze(0),  # [1, 1, 4096]
             text_emb.unsqueeze(0),                # [1, 3, 4096]
@@ -76,15 +68,18 @@ def main(model_path: str = "."):
     
     # Negation example: a negation in text query should result
     # in retrieval of images without the neg. object in the query
-    print(colored("\n[5/6] Testing negation example...", 'cyan'))
+    print(colored("\n[5/5] Testing negation example...", 'cyan'))
     image_paths = [
         './assets/cat.png',
         './assets/dog+cat.png',
     ]
-    image_tensors = read_images_decord(image_paths)
-    with torch.no_grad():
-        image_embs = model.encode_vision(image_tensors.to(model.model.device)).cpu().float()
-        image_embs = torch.nn.functional.normalize(image_embs, dim=-1)
+    image_embs = []
+    for image_path in image_paths:
+        with torch.no_grad():
+            image_emb = model.encode_vision(image_path).cpu().float()
+            image_embs.append(image_emb)
+    image_embs = torch.cat(image_embs, dim=0)
+    image_embs = torch.nn.functional.normalize(image_embs, dim=-1)
     print(f"Image embedding shape: {image_embs.shape}")
     
     texts = ['an image of a cat but there is no dog in it']
@@ -107,19 +102,17 @@ def main(model_path: str = "."):
     
     
     # Composed video retrieval example
-    print(colored("\n[6/6] Testing composed video retrieval...", 'cyan'))
+    print(colored("\n[Bonus] Testing composed video retrieval...", 'cyan'))
     # source_video_path = './assets/source-27375787.mp4'
     # target_video_path = './assets/target-27387901.mp4'
     # edit_text = "Make the billboard blank"
     source_video_path = "./assets/5369546.mp4"
     target_video_path = "./assets/1006630957.mp4"
     edit_text ="make the tree lit up"
-    source_video_tensor = read_frames_decord(source_video_path, num_frames=4)
-    target_video_tensor = read_frames_decord(target_video_path, num_frames=16)
     with torch.no_grad():
-        source_video_emb = model.encode_vision(source_video_tensor.unsqueeze(0), edit_text).cpu().squeeze(0).float()
+        source_video_emb = model.encode_vision_with_text(source_video_path, edit_text).cpu().squeeze(0).float()
         source_video_emb = torch.nn.functional.normalize(source_video_emb, dim=-1)
-        target_video_emb = model.encode_vision(target_video_tensor.unsqueeze(0)).cpu().squeeze(0).float()
+        target_video_emb = model.encode_vision(target_video_path).cpu().squeeze(0).float()
         target_video_emb = torch.nn.functional.normalize(target_video_emb, dim=-1)
     sim_with_edit = source_video_emb @ target_video_emb.t()
     print(f"Source-Target similarity with edit: {sim_with_edit}")
@@ -133,11 +126,11 @@ def main(model_path: str = "."):
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model_path", type=str, default=".")
+    parser.add_argument("--model_path", type=str, default="/work/piyush/pretrained_checkpoints/Tarsier2-7b-0115/")
     args = parser.parse_args()
 
     # import sys
     # sys.path.append(args.model_path)
-    from modeling_tara import TARA, read_frames_decord, read_images_decord
+    from modeling_tara import TARA
 
     main(args.model_path)
