@@ -83,25 +83,33 @@ This will download all model weights (may take a few minutes depending on your c
 
 ### 3. Install Dependencies
 
+**Step 1 — Create and activate a conda environment:**
+```bash
+conda create -n tara python=3.10 -y
+conda activate tara
+```
 
-* Create/activate the conda env (skip if you already have it):
-   ```bash
-   conda create -n tara python=3.10 -y
-   conda activate tara
-   ```
-* Install CUDA 12.1 PyTorch wheels (adjust the index URL if you need a different CUDA/CPU build):
-   ```bash
-   pip install --index-url https://download.pytorch.org/whl/cu121 \
-     torch==2.5.1+cu121 torchvision==0.20.1+cu121 torchaudio==2.5.1+cu121
-   ```
-* Install the remaining model dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-* (Optional) Verify the install:
-   ```bash
-   python -c "import torch, transformers; print(torch.cuda.is_available(), transformers.__version__)"
-   ```
+**Step 2 — Install CUDA-specific wheels** (adjust the index URL if you need a different CUDA build):
+```bash
+pip install --index-url https://download.pytorch.org/whl/cu121 \
+  torch==2.5.1+cu121 torchvision==0.20.1+cu121 torchaudio==2.5.1+cu121
+```
+
+**Step 3 — Install `flash-attn`** (must be built against the torch version installed above):
+```bash
+pip install flash-attn==2.8.3 --no-build-isolation
+```
+
+**Step 4 — Install TARA and all remaining dependencies:**
+```bash
+pip install -e /path/to/tara
+```
+where `/path/to/tara` is the root of this cloned repository. If you are already inside it, use `.` instead.
+
+**(Optional) Verify the install:**
+```bash
+python -c "import torch, transformers, modeling_tara; print(torch.cuda.is_available(), transformers.__version__)"
+```
 
 
 ## Quick Start
