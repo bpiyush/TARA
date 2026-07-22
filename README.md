@@ -1,11 +1,13 @@
-# ![](assets/tara-logo.png) TARA: *T*ext *A*dapted *R*etrieval *A*lignment for Nuanced Video Retrieval
+# ![](assets/tara-logo.png) TARA: *T*ext *A*dapted *R*etrieval *A*lignment for Nuanced Video Retrieval (ECCV 2026)
 <!-- # <img src="./assets/logo.png" width="24"> TARA: Time-Aware Retrieval Adaptation for Video Understanding -->
 
 This repository contains inference and evaluation code for the TARA model based on the paper:
-[Adapting MLLMs for Nuanced Video Retrieval](https://arxiv.org/abs/2512.13511)
+[Adapting MLLMs for Nuanced Video Retrieval (ECCV 2026)](https://arxiv.org/abs/2512.13511)
 
 <p align="center">
-  <a href="https://bpiyush.github.io/tara-website/" target="_blank">
+  <img src="https://img.shields.io/badge/ECCV-2026-blue" alt="ECCV 2026">
+  &nbsp;&nbsp;&nbsp;
+  <a href="https://www.robots.ox.ac.uk/~vgg/research/tara/" target="_blank">
     <img src="https://img.shields.io/badge/Project-Page-blue" alt="Project Page">
   </a>
   &nbsp;&nbsp;&nbsp;
@@ -15,6 +17,10 @@ This repository contains inference and evaluation code for the TARA model based 
   &nbsp;&nbsp;&nbsp;
   <a href="https://arxiv.org/abs/2512.13511" target="_blank">
     <img src="https://img.shields.io/badge/arXiv-Paper-b31b1b?logo=arxiv&logoColor=white" alt="arXiv">
+  </a>
+  &nbsp;&nbsp;&nbsp;
+  <a href="https://huggingface.co/bpiyush/TARA" target="_blank">
+    <img src="https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Model-yellow" alt="Hugging Face Model">
   </a>
   &nbsp;&nbsp;&nbsp;
   <a href="https://huggingface.co/datasets/bpiyush/chirality-in-action" target="_blank">
@@ -349,25 +355,25 @@ If your MMEB-V2 data/config paths are different, override:
 
 ## Training
 
-Coming soon: we are preparing the training code for TARA and should be available soon.
+See [TRAIN.md](TRAIN.md) for the full training pipeline (data format, fine-tuning, and weight merging).
 
 ## Citation
 
 If you use this model, please cite:
 ```bibtex
-@article{tara2025,
+@article{bagad2026tara,
   title={Adapting MLLMs for Nuanced Video Retrieval},
-  author={Piyush Bagad and Andrew Zisserman},
-  year={2025}
-  journal={arXiv preprint arXiv:2512.13511}
+  author={Bagad, Piyush and Zisserman, Andrew},
+  journal={arXiv preprint arXiv:2512.13511},
+  year={2026}
 }
 ```
 
 ```bibtex
-@article{bagad2025chirality,
+@inproceedings{bagad2025chirality,
   title={Chirality in Action: Time-Aware Video Representation Learning by Latent Straightening},
   author={Bagad, Piyush and Zisserman, Andrew},
-  journal={arXiv preprint arXiv:2509.08502},
+  booktitle={Advances in Neural Information Processing Systems (NeurIPS)},
   year={2025}
 }
 ```
