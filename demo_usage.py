@@ -1,9 +1,18 @@
 import torch
 from termcolor import colored
+import importlib.util
 
 
 import warnings
 warnings.filterwarnings("ignore")
+
+
+def can_use_fa2():
+    return (
+        torch.cuda.is_available()
+        and torch.cuda.get_device_capability()[0] >= 8
+        and importlib.util.find_spec("flash_attn") is not None
+    )
 
 
 def main(model_path: str = "."):
@@ -11,13 +20,17 @@ def main(model_path: str = "."):
     print(colored("TARA Model Demo", 'yellow', attrs=['bold']))
     print(colored("="*60, 'yellow'))
     
+    # Use flash_attention_2 only if it is available
+    attn_implementation = "flash_attention_2" if can_use_fa2() else "eager"
+    print(f"Using attention implementation: {attn_implementation}")
+    
     # Load model from current directory
     print(colored("\n[1/5] Loading model...", 'cyan'))
     model = TARA.from_pretrained(
         model_path,  # Load from current directory
         device_map='auto',
         torch_dtype=torch.bfloat16,
-        attn_implementation='flash_attention_2',
+        attn_implementation=attn_implementation,
     )
     
     n_params = sum(p.numel() for p in model.model.parameters())

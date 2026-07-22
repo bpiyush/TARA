@@ -7,13 +7,14 @@ name = "tara-embed"
 version = "0.1.0"
 description = "TARA: Text-Audio-Related-Annotation embedding model"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = "==3.10.*"
 license = { text = "Apache-2.0" }
 
-# NOTE: torch, torchvision, torchaudio, flash-attn, and xformers must be
-# pre-installed separately with the correct CUDA build (e.g. cu121).
-# See requirements.txt for the exact versions used during development.
 dependencies = [
+    "torch==2.5.1+cu121",
+    "torchvision==0.20.1+cu121",
+    "torchaudio==2.5.1+cu121",
+    "flash-attn==2.8.3",
     "einops>=0.8.1",
     "Pillow>=10.0.0",
     "transformers==4.45.0",
@@ -45,6 +46,11 @@ dependencies = [
     "IPython",
     "ipywidgets",
     "ffmpeg-python",
+    "ipdb>=0.13.13",
+    "wandb>=0.28.1",
+    "deepspeed==0.17.6",
+    "setuptools==80.9.0",
+    "fire==0.7.1",
 ]
 
 [tool.setuptools]
@@ -55,3 +61,16 @@ include = ["tarsier2*", "shared*"]
 
 [tool.setuptools.package-data]
 tarsier2 = ["default_config.yaml"]
+
+# --- uv-specific configuration ---
+
+[[tool.uv.index]]
+name = "pytorch-cu121"
+url = "https://download.pytorch.org/whl/cu121"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu121" }
+torchvision = { index = "pytorch-cu121" }
+torchaudio = { index = "pytorch-cu121" }
+flash-attn = { url = "https://github.com/Dao-AILab/flash-attention/releases/download/v2.8.3/flash_attn-2.8.3+cu12torch2.5cxx11abiFALSE-cp310-cp310-linux_x86_64.whl" }
