@@ -364,7 +364,7 @@ If you use this model, please cite:
 @article{bagad2026tara,
   title={Adapting MLLMs for Nuanced Video Retrieval},
   author={Bagad, Piyush and Zisserman, Andrew},
-  journal={arXiv preprint arXiv:2512.13511},
+  journal={European Conference on Computer Vision (ECCV)},
   year={2026}
 }
 ```
