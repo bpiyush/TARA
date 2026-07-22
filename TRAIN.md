@@ -89,6 +89,9 @@ hf download omni-research/Tarsier2-7b-0115 --local-dir /path/to/Tarsier2-7b-0115
 
 ## 3. Run fine-tuning
 
+> W&B Login: Before training, run `wandb login` to login to your WandB account.
+> Note that with uv, you should run `uv run wandb login` instead.
+
 Fine-tuning is launched with DeepSpeed (ZeRO-2) via the driver script
 [`training/train_tarsier2.sh`](training/train_tarsier2.sh). All machine-specific
 paths are configurable through environment variables (with repo-relative
@@ -130,6 +133,11 @@ Key training hyperparameters (set inside the driver script, matching the paper
 setup) are: global batch size `768`, micro batch size `32`, `2` epochs, learning
 rate `2e-5`, warmup ratio `0.1`, `cutoff_len` `32`, bf16, gradient checkpointing,
 and `--use_neg_sentence` (hard negatives enabled).
+
+An example command that I used while testing the code:
+```sh
+BASE_MODEL=/work/piyush/pretrained_checkpoints/Tarsier2-7b-0115/  DATA_ROOT=/scratch/shared/beegfs/piyush/datasets/SimCSE-NLI/ OUTPUT_ROOT=/work/piyush/experiments/tara/ bash training/train_tarsier2.sh covr/chiral10k-covr10k last_token
+```
 
 The fine-tuned **LLM** checkpoint is written to:
 

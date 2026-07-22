@@ -54,9 +54,20 @@ CSV_PATH="${DATA_ROOT}/${split}.csv"
 echo "$BASE_MODEL"
 echo "$MICRO_BATCH_SIZE $BATCH_SIZE"
 echo "Training data: $CSV_PATH"
-wandb online
 
-deepspeed --num_gpus="$GPUS" --num_nodes="$NUM_NODES" "$SCRIPT_DIR/finetuning_tarsier2.py" \
+export WANDB_MODE=online
+
+# Prefer deepspeed on PATH (conda / activated venv); else fall back to uv.
+if command -v deepspeed >/dev/null 2>&1; then
+    DEEPSPEED=(deepspeed)
+elif command -v uv >/dev/null 2>&1; then
+    DEEPSPEED=(uv run deepspeed)
+else
+    echo "deepspeed not found. Activate your env, or install uv and run: uv sync" >&2
+    exit 1
+fi
+
+"${DEEPSPEED[@]}" --num_gpus="$GPUS" --num_nodes="$NUM_NODES" "$SCRIPT_DIR/finetuning_tarsier2.py" \
         --model_name_or_path "$BASE_MODEL" \
         --data_path "$CSV_PATH" \
         --batch_size $BATCH_SIZE \
