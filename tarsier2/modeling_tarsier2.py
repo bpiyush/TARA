@@ -401,7 +401,7 @@ class Tarsier2ForConditionalGeneration(Tarsier2PreTrainedModel, GenerationMixin)
                     image_features
                 )
             else:
-                inputs_embeds = image_features.sum(dim=(0,1)) * 0. + inputs_embeds
+                inputs_embeds = image_features.sum(dim=(0,1)).to(inputs_embeds.device) * 0. + inputs_embeds
 
         outputs = self.language_model(
             attention_mask=attention_mask,

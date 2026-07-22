@@ -46,6 +46,7 @@ dependencies = [
     "IPython",
     "ipywidgets",
     "ffmpeg-python",
+    "ipdb>=0.13.13",
 ]
 
 [tool.setuptools]
