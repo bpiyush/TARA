@@ -83,6 +83,29 @@ This will download all model weights (may take a few minutes depending on your c
 
 ### 3. Install Dependencies
 
+> [!TIP]
+> **Prefer `uv` over conda/pip?** You can set up the same environment with [uv](https://github.com/astral-sh/uv):
+>
+> **GPU requirement:** the prebuilt `flash-attn` wheel used below requires an **Ampere-generation GPU or newer** (compute capability ≥ 8.0) — e.g. RTX A4000/A5000/A6000, A100, RTX 30/40-series, H100. Older GPUs (Turing, Volta, T4, V100) are not supported by flash-attn 2.x. Tested and confirmed working on an **NVIDIA RTX A4000**.
+> ```bash
+> # 1. Install uv (if needed)
+> curl -LsSf https://astral.sh/uv/install.sh | sh
+>
+> # 2. Sync the environment (reads pyproject.toml, installs torch/flash-attn/etc.)
+> uv sync
+>
+> # 3. Quick check that CUDA + flash-attn are wired up correctly
+> uv run python -c "
+> import torch, flash_attn
+> print('torch:', torch.__version__, '| CUDA available:', torch.cuda.is_available())
+> print('flash-attn:', flash_attn.__version__)
+> "
+> ```
+> Once synced, prefix any command from this README with `uv run` instead of activating a conda env, e.g.:
+> ```bash
+> uv run python demo_usage.py --model_path /path/to/download/tara
+> ```
+
 **Step 1 — Create and activate a conda environment:**
 ```bash
 conda create -n tara python=3.10 -y
