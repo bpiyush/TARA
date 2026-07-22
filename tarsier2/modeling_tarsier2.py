@@ -276,7 +276,8 @@ class Tarsier2ForConditionalGeneration(Tarsier2PreTrainedModel, GenerationMixin)
         from tarsier2.modeling_qwen2_vl_fast import (
             Qwen2VisionTransformerPretrainedModel,
         )
-        config.vision_config.attn_implementation = config.vision_config._attn_implementation
+        # config.vision_config.attn_implementation = config.vision_config._attn_implementation
+        config.vision_config.attn_implementation = config.text_config._attn_implementation
         self.vision_tower = Qwen2VisionTransformerPretrainedModel(config.vision_config)
         # self.vision_tower = AutoModel.from_config(config.vision_config, trust_remote_code=True)
         

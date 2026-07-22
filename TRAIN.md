@@ -227,3 +227,8 @@ model = TARA.from_pretrained(
 See the [main README](README.md#quick-start) and [`demo_usage.py`](demo_usage.py)
 for how to encode videos, images, and text with the resulting model, and
 [Evaluation](README.md#evaluation) for reproducing the benchmark numbers.
+
+Or run the demo usage script with the merged checkpoint:
+```sh
+python demo_usage.py --model_path /work/piyush/experiments/tara/CaRe/Tarsier2-7b-0115/covr/chiral10k-covr10k-stepwise/merged_checkpoint/ 
+```

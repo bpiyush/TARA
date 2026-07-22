@@ -48,13 +48,13 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    # Need to ensure the `tara` conda env is activated.
-    command = "echo $CONDA_DEFAULT_ENV"
-    output = os.popen(command).read().strip()
-    if output != "tara":
-        raise ValueError(
-            "`tara` conda env is not activated. Please activate it and try again."
-        )
+    # # Need to ensure the `tara` conda env is activated.
+    # command = "echo $CONDA_DEFAULT_ENV"
+    # output = os.popen(command).read().strip()
+    # if output != "tara":
+    #     raise ValueError(
+    #         "`tara` conda env is not activated. Please activate it and try again."
+    #     )
 
     print("Loading base Tarsier2 MLLM on CPU (no device_map)...")
     mllm = BaseModelForTARA.from_pretrained(
